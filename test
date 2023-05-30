@@ -1,0 +1,114 @@
+一、
+
+import (
+	"fmt"
+	"io/ioutil"
+	"net/http"
+	"os"
+	"regexp"
+	"strconv"
+	"sync"
+)
+
+const (
+	baseURL     = "https://jsonplaceholder.typicode.com/posts/"
+	commentsURL = "/comments"
+	numPages    = 100
+	perPage     = 5
+)
+
+func main() {
+	// 创建一个用于存储所有邮件地址的切片
+	emails := make([]string, 0)
+
+	// 创建一个用于同步goroutine的等待组
+	var wg sync.WaitGroup
+
+	// 创建一个有缓冲的通道，用于控制并发数
+	concurrency := 10
+	semaphore := make(chan struct{}, concurrency)
+
+	// 遍历所有页面并启动相应数量的goroutine
+	for i := 1; i <= numPages; i++ {
+		wg.Add(1)
+		semaphore <- struct{}{} // 申请一个并发许可
+
+		go func(page int) {
+			defer func() {
+				<-semaphore // 释放并发许可
+				wg.Done()
+			}()
+
+			url := baseURL + strconv.Itoa(page) + commentsURL
+			pageEmails, err := getEmailAddresses(url)
+			if err != nil {
+				fmt.Printf("Error fetching emails from %s: %v\n", url, err)
+				return
+			}
+
+				emails = append(emails, pageEmails...)
+				fmt.Printf("Fetched %d emails from %s\n", len(pageEmails), url)
+		}(i)
+	}
+
+	wg.Wait() // 等待所有goroutine完成
+
+	// 将所有邮件地址写入文件
+	if err := writeEmailsToFile(emails); err != nil {
+		fmt.Println("Error writing emails to file:", err)
+		return
+	}
+
+	fmt.Println("All emails have been saved to file.")
+}
+
+func getEmailAddresses(url string) ([]string, error) {
+	response, err := http.Get(url)
+	if err != nil {
+		return nil, err
+	}
+	defer response.Body.Close()
+
+	body, err := ioutil.ReadAll(response.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	// 使用正则表达式提取邮件地址
+	re := regexp.MustCompile(`[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+`)
+	matches := re.FindAllString(string(body), -1)
+
+	return matches, nil
+}
+
+func writeEmailsToFile(emails []string) error {
+	file, err := os.Create("emails.txt")
+	if err != nil {
+		return err
+	}
+	defer file.Close()
+
+	for _, email := range emails
+
+
+
+
+
+二、
+import your_protobuf_file_pb2 as pb
+
+# 创建一个Person对象并设置数据
+person = pb.Person()
+person.name = "John Doe"
+person.age = 30
+person.hobbies.append("Reading")
+person.hobbies.append("Gaming")
+
+# 将Person对象序列化为二进制数据
+data = person.SerializeToString()
+
+# 将二进制数据写入文件
+with open("data.bin", "wb") as f:
+    f.write(data)
+
+print("Data has been written to data.bin file.")
